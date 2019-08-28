@@ -1,0 +1,86 @@
+<!DOCTYPE> 
+<html> 
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <style>
+        #root {
+            width: 100%;
+            height: 800px;
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+        <div id="root">
+            <svg
+                width="1000"
+                height="800"
+            >
+
+                <defs>
+                    <mask id="Mask">
+                        <circle id="m-circle" r="150" fill="url(#grad)"  />
+                    </mask>
+                    <radialGradient
+                        id="grad"
+                        cx="0.5"
+                        cy="0.5"
+                        r="0.5" >
+                        <stop offset="0%" stop-color="#ff0" stop-opacity='1'/>
+                        <stop offset="100%" stop-color="#ff0" stop-opacity='0' />
+                
+                    </radialGradient>
+                </defs>
+            </svg>
+        </div>
+
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script>
+        const container = d3.select('svg')
+
+        const path = container
+        .append('path')
+        .attr('fill', 'none')
+        .attr('stroke', 'none')
+        .attr('d', 'M50, 50 Q300, 300  600, 50')
+        .attr('id', 'line')
+        const pathline = path.node()
+        const len = pathline.getTotalLength()
+
+        const mCircle = container.select('#m-circle')
+
+        const points = []
+
+        const animate = () => {
+            container.select('#flyline').remove()
+            container.append('path')
+            .attr('stroke', '#19D0DC')
+            .attr('fill', 'none')
+            .attr('id', 'flyline')
+            .attr('stroke-width', '5px')
+            .attr('mask', "url(#Mask)")
+            .transition()
+            .duration(3000)
+            .attrTween('d', function(d) {
+                const coord = path.attr('d').replace(/(M|Q)/g, '').match(/((\d|\.)+)/g)
+                var x1 = coord[0], y1 = coord[1], // 起点
+                    x2 = coord[2], y2 = coord[3], // 控制点
+                    x3 = coord[4], y3 = coord[5]; // 终点
+                return function(t) {
+                    const p = pathline.getPointAtLength(t * len)  
+                    const x = (1 - t) * x1 + t * x2
+                    const y = (1 - t) * y1 + t * y2
+                    mCircle.attr('cx', p.x)
+                        .attr('cy', p.y)
+                    return `M${x1}, ${y1} Q${x},${y} ${p.x}, ${p.y}`
+                }
+            })
+        }
+        
+        animate()
+        setInterval(animate, 3200)
+
+
+    </script>
+</body>
+</html>
